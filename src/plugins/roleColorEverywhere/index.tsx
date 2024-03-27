@@ -195,7 +195,11 @@ export default definePlugin({
         if (!(guildId ??= ChannelStore.getChannel(channelId!)?.guild_id)) return null;
         const member = GuildMemberStore.getMember(guildId, userId);
 
-        return getPrimaryRoleOverrideColor(member.roles, guildId) ?? member?.colorString ?? null;
+        if (!member) {
+            return null;
+        }
+
+        return getPrimaryRoleOverrideColor(member.roles, guildId) ?? member.colorString;
     },
 
     getUserColor(userId: string, ids: { channelId?: string; guildId?: string; }) {
