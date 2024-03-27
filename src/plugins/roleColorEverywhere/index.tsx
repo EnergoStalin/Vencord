@@ -60,8 +60,8 @@ const settings = definePluginSettings({
     primaryRoleOverride: {
         type: OptionType.STRING,
         default: "",
-        description: "Force color from that role on user syntax 'roleid#optional description,roleid'",
-        restartNeeded: true
+        description: "Use color blend of this roles user have syntax 'roleid#optional description,roleid'",
+        restartNeeded: true // I don't know how to make it reactive without a component
     }
 }).withPrivateSettings<{
     preprocessedPrimaryRoleOverrides: string[]
