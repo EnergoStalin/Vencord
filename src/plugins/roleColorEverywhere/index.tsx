@@ -83,12 +83,20 @@ function getPrimaryRoleOverrideColor(roles: string[], guildId: string) {
     const overrides = settings.store.preprocessedPrimaryRoleOverrides;
     if (atLeastOneOverrideAppliesToGuild(overrides, guildId!)) {
         const memberRoles = roles.map(role => GuildStore.getRole(guildId!, role)).filter(e => e);
-        const blendColorsFromRoles = memberRoles.filter(role => overrides.includes(role.id));
-        if(blendColorsFromRoles.length < 2)
+        const blendColorsFromRoles = memberRoles
+            .filter(role => overrides.includes(role.id));
+
+        // if only one override apply, return the first role color
+        if (blendColorsFromRoles.length < 2)
             return blendColorsFromRoles[0]?.colorString ?? null;
 
-        const color = blendColorsFromRoles.slice(1).reduce((p, c) => blendColors(p, c!.colorString!, .5), blendColorsFromRoles[0].colorString!);
-        console.log(`Blending ${blendColorsFromRoles.map(role => role.colorString).join(", ")} => ${color}`);
+        const color = blendColorsFromRoles
+            .slice(1)
+            .reduce(
+                (p, c) => blendColors(p, c!.colorString!, .5),
+                blendColorsFromRoles[0].colorString!
+            );
+
         return color;
     }
 
