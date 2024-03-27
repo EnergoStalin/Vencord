@@ -92,9 +92,9 @@ function atLeastOneOverrideAppliesToGuild(overrides: string[], guildId: string) 
 }
 
 function getPrimaryRoleOverrideColor(roles: string[], guildId: string) {
-    if (!settings.store.preprocessedPrimaryRoleOverrides.length) return null;
-
     const overrides = settings.store.preprocessedPrimaryRoleOverrides;
+    if (!overrides.length) return null;
+
     if (atLeastOneOverrideAppliesToGuild(overrides, guildId!)) {
         const memberRoles = roles.map(role => getRoleCached(guildId!, role)).filter(e => e);
         const blendColorsFromRoles = memberRoles
@@ -204,7 +204,7 @@ export default definePlugin({
     },
 
     roleGroupColor: ErrorBoundary.wrap(({ id, count, title, guildId, label }: { id: string; count: number; title: string; guildId: string; label: string; }) => {
-        const role = GuildStore.getRole(guildId, id);
+        const role = getRoleCached(guildId, id);
 
         return (
             <span style={{
