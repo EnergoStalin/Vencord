@@ -54,14 +54,42 @@ const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         default: true,
         description: "Show role colors in the reactors list",
+    },
+    primaryRoleOverride: {
+        type: OptionType.STRING,
+        default: "",
+        description: "Force color from that role on user syntax 'roleid,roleid'",
         restartNeeded: true
     }
 });
 
+function atLeastOneOverrideAppliesToGuild(overrides: string[], guildId: string) {
+    for (const role of overrides) {
+        if (GuildStore.getRole(guildId, role)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function getPrimaryRoleOverrideColor(roles: string[], guildId: string) {
+    if (!settings.store.primaryRoleOverride.length) return null;
+
+    const overrides = settings.store.primaryRoleOverride.split(",");
+    if (atLeastOneOverrideAppliesToGuild(overrides, guildId!)) {
+        const memberRoles = roles.map(role => GuildStore.getRole(guildId!, role)).filter(e => e);
+        const forceColorFromThatRole = memberRoles.find(role => overrides.includes(role.id));
+
+        return forceColorFromThatRole?.colorString ?? null;
+    }
+
+    return null;
+}
 
 export default definePlugin({
     name: "RoleColorEverywhere",
-    authors: [Devs.KingFish, Devs.lewisakura, Devs.AutumnVN],
+    authors: [Devs.KingFish, Devs.lewisakura, Devs.AutumnVN, Devs.EnergoStalin],
     description: "Adds the top role color anywhere possible",
     patches: [
         // Chat Mentions
@@ -135,7 +163,9 @@ export default definePlugin({
 
     getColor(userId: string, { channelId, guildId }: { channelId?: string; guildId?: string; }) {
         if (!(guildId ??= ChannelStore.getChannel(channelId!)?.guild_id)) return null;
-        return GuildMemberStore.getMember(guildId, userId)?.colorString ?? null;
+        const member = GuildMemberStore.getMember(guildId, userId);
+
+        return getPrimaryRoleOverrideColor(member.roles, guildId) ?? member?.colorString ?? null;
     },
 
     getUserColor(userId: string, ids: { channelId?: string; guildId?: string; }) {
