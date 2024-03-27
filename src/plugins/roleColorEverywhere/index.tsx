@@ -31,6 +31,8 @@ import { RoleModalList } from "./components/RolesView";
 const cl = classNameFactory("rolecolor");
 const DeveloperMode = getSettingStoreLazy("appearance", "developerMode")!;
 
+import { blendColors } from "./blendColors";
+
 const settings = definePluginSettings({
     chatMentions: {
         type: OptionType.BOOLEAN,
@@ -58,10 +60,12 @@ const settings = definePluginSettings({
     primaryRoleOverride: {
         type: OptionType.STRING,
         default: "",
-        description: "Force color from that role on user syntax 'roleid,roleid'",
+        description: "Force color from that role on user syntax 'roleid#optional description,roleid'",
         restartNeeded: true
     }
-});
+}).withPrivateSettings<{
+    preprocessedPrimaryRoleOverrides: string[]
+}>();
 
 function atLeastOneOverrideAppliesToGuild(overrides: string[], guildId: string) {
     for (const role of overrides) {
@@ -74,14 +78,18 @@ function atLeastOneOverrideAppliesToGuild(overrides: string[], guildId: string) 
 }
 
 function getPrimaryRoleOverrideColor(roles: string[], guildId: string) {
-    if (!settings.store.primaryRoleOverride.length) return null;
+    if (!settings.store.preprocessedPrimaryRoleOverrides.length) return null;
 
-    const overrides = settings.store.primaryRoleOverride.split(",");
+    const overrides = settings.store.preprocessedPrimaryRoleOverrides;
     if (atLeastOneOverrideAppliesToGuild(overrides, guildId!)) {
         const memberRoles = roles.map(role => GuildStore.getRole(guildId!, role)).filter(e => e);
-        const forceColorFromThatRole = memberRoles.find(role => overrides.includes(role.id));
+        const blendColorsFromRoles = memberRoles.filter(role => overrides.includes(role.id));
+        if(blendColorsFromRoles.length < 2)
+            return blendColorsFromRoles[0]?.colorString ?? null;
 
-        return forceColorFromThatRole?.colorString ?? null;
+        const color = blendColorsFromRoles.slice(1).reduce((p, c) => blendColors(p, c!.colorString!, .5), blendColorsFromRoles[0].colorString!);
+        console.log(`Blending ${blendColorsFromRoles.map(role => role.colorString).join(", ")} => ${color}`);
+        return color;
     }
 
     return null;
