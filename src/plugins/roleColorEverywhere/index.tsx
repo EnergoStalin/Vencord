@@ -84,7 +84,8 @@ function getPrimaryRoleOverrideColor(roles: string[], guildId: string) {
     if (atLeastOneOverrideAppliesToGuild(overrides, guildId!)) {
         const memberRoles = roles.map(role => GuildStore.getRole(guildId!, role)).filter(e => e);
         const blendColorsFromRoles = memberRoles
-            .filter(role => overrides.includes(role.id));
+            .filter(role => overrides.includes(role.id))
+            .sort((a, b) => b.color - a.color);
 
         // if only one override apply, return the first role color
         if (blendColorsFromRoles.length < 2)
