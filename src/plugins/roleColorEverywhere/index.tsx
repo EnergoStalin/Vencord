@@ -67,23 +67,9 @@ const settings = definePluginSettings({
     preprocessedPrimaryRoleOverrides: string[]
 }>();
 
-function memoizedGetRole() {
-    const cache = new Map();
-    return (guildId: string, roleId: string) => {
-        let role = cache.get(roleId);
-        if (role) return role;
-
-        role = GuildStore.getRole(guildId, roleId);
-        cache.set(roleId, role);
-        return role;
-    };
-}
-
-const getRoleCached = memoizedGetRole();
-
 function atLeastOneOverrideAppliesToGuild(overrides: string[], guildId: string) {
     for (const role of overrides) {
-        if (getRoleCached(guildId, role)) {
+        if (GuildStore.getRole(guildId, role)) {
             return true;
         }
     }
@@ -96,7 +82,7 @@ function getPrimaryRoleOverrideColor(roles: string[], guildId: string) {
     if (!overrides.length) return null;
 
     if (atLeastOneOverrideAppliesToGuild(overrides, guildId!)) {
-        const memberRoles = roles.map(role => getRoleCached(guildId!, role)).filter(e => e);
+        const memberRoles = roles.map(role => GuildStore.getRole(guildId!, role)).filter(e => e);
         const blendColorsFromRoles = memberRoles
             .filter(role => overrides.includes(role.id));
 
@@ -208,7 +194,7 @@ export default definePlugin({
     },
 
     roleGroupColor: ErrorBoundary.wrap(({ id, count, title, guildId, label }: { id: string; count: number; title: string; guildId: string; label: string; }) => {
-        const role = getRoleCached(guildId, id);
+        const role = GuildStore.getRole(guildId, id);
 
         return (
             <span style={{
