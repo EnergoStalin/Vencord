@@ -21,6 +21,7 @@ import { getSettingStoreLazy } from "@api/SettingsStores";
 import { classNameFactory } from "@api/Styles";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
+import { getCurrentGuild } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
 import { ChannelStore, GuildMemberStore, GuildStore, Menu, React } from "@webpack/common";
 import { Guild } from "discord-types/general";
@@ -102,6 +103,27 @@ function getPrimaryRoleOverrideColor(roles: string[], guildId: string) {
     }
 
     return null;
+}
+
+function preprocessRoles() {
+    settings.store.preprocessedPrimaryRoleOverrides =
+        settings.store.primaryRoleOverride.replaceAll(/#.+?,?/g, ",").split(",");
+}
+
+// Using plain replaces cause i dont want sanitize regexp
+function toggleRoleInOverrideList(entry: string) {
+    let overrideList = settings.store.primaryRoleOverride;
+    const start = overrideList.indexOf(entry.split("#")[0]);
+    if (start === -1) {
+        overrideList = overrideList.replace(/,$/m, "");
+        overrideList += ((overrideList.length === 0) ? "" : ",") + entry;
+    } else {
+        const end = overrideList.indexOf(",", start) + 1;
+        overrideList = overrideList
+            .replace(overrideList.slice(start, end), "")
+            .replace(/,+/, ",");
+    }
+    preprocessRoles();
 }
 
 export default definePlugin({
@@ -214,5 +236,28 @@ export default definePlugin({
                 color: this.getColor(userId, { guildId })
             }
         };
+    },
+
+    contextMenus: {
+        "dev-context"(children, { id }: { id: string; }) {
+            const guild = getCurrentGuild();
+            if (!guild) return;
+
+            const role = GuildStore.getRole(guild.id, id);
+            if (!role) return;
+
+            if (role.colorString) {
+                const label = (settings.store.preprocessedPrimaryRoleOverrides.includes(role.id) ?
+                    "Remove role from" :
+                    "Add role to") + " coloring list";
+                children.push(
+                    <Menu.MenuItem
+                        id="vc-role-color-blend-list"
+                        label={label}
+                        action={() => toggleRoleInOverrideList(`${role.id}#${guild.name ?? guild.id}:${role.name ?? "nameless"}`)}
+                    />
+                );
+            }
+        }
     }
 });
