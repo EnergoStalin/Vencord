@@ -22,6 +22,7 @@ import { classNameFactory } from "@api/Styles";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import { getCurrentGuild } from "@utils/discord";
+import { ModalProps, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
 import { ChannelStore, GuildMemberStore, GuildStore, Menu, React } from "@webpack/common";
 import { Guild } from "discord-types/general";
@@ -33,6 +34,9 @@ const cl = classNameFactory("rolecolor");
 const DeveloperMode = getSettingStoreLazy("appearance", "developerMode")!;
 
 import { blendColors } from "./blendColors";
+import { RoleModalList } from "./components/RolesView";
+
+const cl = classNameFactory("rolecolor");
 
 const settings = definePluginSettings({
     chatMentions: {
@@ -58,14 +62,8 @@ const settings = definePluginSettings({
         default: true,
         description: "Show role colors in the reactors list",
     },
-    primaryRoleOverride: {
-        type: OptionType.STRING,
-        default: "",
-        description: "Use color blend of this roles user have syntax 'roleid#optional description,roleid'",
-        restartNeeded: true // I don't know how to make it reactive without a component
-    }
 }).withPrivateSettings<{
-    preprocessedPrimaryRoleOverrides: string[]
+    userColorFromRoles: Record<string, string[]>
 }>();
 
 function atLeastOneOverrideAppliesToGuild(overrides: string[], guildId: string) {
@@ -79,8 +77,8 @@ function atLeastOneOverrideAppliesToGuild(overrides: string[], guildId: string) 
 }
 
 function getPrimaryRoleOverrideColor(roles: string[], guildId: string) {
-    const overrides = settings.store.preprocessedPrimaryRoleOverrides;
-    if (!overrides.length) return null;
+    const overrides = settings.store.userColorFromRoles[guildId];
+    if (!overrides?.length) return null;
 
     if (atLeastOneOverrideAppliesToGuild(overrides, guildId!)) {
         const memberRoles = roles.map(role => GuildStore.getRole(guildId!, role)).filter(e => e);
@@ -105,25 +103,32 @@ function getPrimaryRoleOverrideColor(roles: string[], guildId: string) {
     return null;
 }
 
-function preprocessRoles() {
-    settings.store.preprocessedPrimaryRoleOverrides =
-        settings.store.primaryRoleOverride.replaceAll(/#.+?,?/g, ",").split(",");
+// Using plain replaces cause i dont want sanitize regexp
+function toggleRole(guildId: string, id: string) {
+    let roles = settings.store.userColorFromRoles[guildId];
+    const len = roles.length;
+
+    roles = roles.filter(e => e !== id);
+
+    if (len === roles.length) {
+        roles.push(id);
+    }
+
+    settings.store.userColorFromRoles[guildId] = roles;
 }
 
-// Using plain replaces cause i dont want sanitize regexp
-function toggleRoleInOverrideList(entry: string) {
-    let overrideList = settings.store.primaryRoleOverride;
-    const start = overrideList.indexOf(entry.split("#")[0]);
-    if (start === -1) {
-        overrideList = overrideList.replace(/,$/m, "");
-        overrideList += ((overrideList.length === 0) ? "" : ",") + entry;
-    } else {
-        const end = overrideList.indexOf(",", start) + 1;
-        overrideList = overrideList
-            .replace(overrideList.slice(start, end), "")
-            .replace(/,+/, ",");
-    }
-    preprocessRoles();
+function RoleModal({ modalProps, guildId }: { modalProps: ModalProps, guildId: string }) {
+    const [ids, setIds] = React.useState(settings.store.userColorFromRoles[guildId]);
+    const roles = React.useMemo(() => ids.map(id => GuildStore.getRole(guildId, id)), [ids]);
+
+    return <RoleModalList
+        modalProps={modalProps}
+        roleList={roles}
+        onRoleRemove={id => {
+            toggleRole(guildId, id);
+            setIds(settings.store.userColorFromRoles[guildId]);
+        }}
+    />;
 }
 
 export default definePlugin({
@@ -243,19 +248,37 @@ export default definePlugin({
             const guild = getCurrentGuild();
             if (!guild) return;
 
+            settings.store.userColorFromRoles[guild.id] ??= [];
+
             const role = GuildStore.getRole(guild.id, id);
             if (!role) return;
 
+            const togglelabel = (settings.store.userColorFromRoles[guild.id]?.includes(role.id) ?
+                "Remove role from" :
+                "Add role to") + " coloring list";
+
             if (role.colorString) {
-                const label = (settings.store.preprocessedPrimaryRoleOverrides.includes(role.id) ?
-                    "Remove role from" :
-                    "Add role to") + " coloring list";
                 children.push(
                     <Menu.MenuItem
-                        id="vc-role-color-blend-list"
-                        label={label}
-                        action={() => toggleRoleInOverrideList(`${role.id}#${guild.name ?? guild.id}:${role.name ?? "nameless"}`)}
-                    />
+                        id={cl("context-menu")}
+                        label="Coloring"
+                    >
+                        <Menu.MenuItem
+                            id={cl("toggle-role-for-guild")}
+                            label={togglelabel}
+                            action={() => toggleRole(guild.id, role.id)}
+                        />
+                        <Menu.MenuItem
+                            id={cl("show-color-roles")}
+                            label="Show roles"
+                            action={() => openModal(modalProps => (
+                                <RoleModal
+                                    modalProps={modalProps}
+                                    guildId={guild.id}
+                                />
+                            ))}
+                        />
+                    </Menu.MenuItem>
                 );
             }
         }
