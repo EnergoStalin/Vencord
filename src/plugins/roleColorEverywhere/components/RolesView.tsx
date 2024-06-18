@@ -18,11 +18,11 @@ const Classes = proxyLazyWebpack(() =>
     ))
 ) as Record<"roles" | "rolePill" | "rolePillBorder" | "desaturateUserColors" | "flex" | "alignCenter" | "justifyCenter" | "svg" | "background" | "dot" | "dotBorderColor" | "roleCircle" | "dotBorderBase" | "flex" | "alignCenter" | "justifyCenter" | "wrap" | "root" | "role" | "roleRemoveButton" | "roleDot" | "roleFlowerStar" | "roleRemoveIcon" | "roleRemoveIconFocused" | "roleVerifiedIcon" | "roleName" | "roleNameOverflow" | "actionButton" | "overflowButton" | "addButton" | "addButtonIcon" | "overflowRolesPopout" | "overflowRolesPopoutArrowWrapper" | "overflowRolesPopoutArrow" | "popoutBottom" | "popoutTop" | "overflowRolesPopoutHeader" | "overflowRolesPopoutHeaderIcon" | "overflowRolesPopoutHeaderText" | "roleIcon" | "roleRemoveButtonCanRemove" | "roleRemoveIcon" | "roleIcon", string>;
 
-export function RoleCard({ onRoleRemove, data }: { onRoleRemove: (id: string) => void, data: Role }) {
+export function RoleCard({ onRoleRemove, data, border }: { onRoleRemove: (id: string) => void, data: Role, border: boolean }) {
     const { role, roleRemoveButton, roleRemoveButtonCanRemove, roleRemoveIcon, roleIcon, roleNameOverflow, rolePill, rolePillBorder, roleCircle, roleName } = Classes;
 
     return (
-        <div className={classes(role, rolePill, rolePillBorder)}>
+        <div className={classes(role, rolePill, border ? rolePillBorder : null)}>
             <div
                 className={classes(roleRemoveButton, roleRemoveButtonCanRemove)}
                 onClick={() => onRoleRemove(data.id)}
@@ -42,7 +42,7 @@ export function RoleCard({ onRoleRemove, data }: { onRoleRemove: (id: string) =>
                 </svg>
             </div>
             <span>
-                <img className={roleIcon} height="16" src={`https://cdn.discordapp.com/role-icons/${data.id}/${data.icon}.webp?size=16&quality=lossless`}/>
+                <img alt="" className={roleIcon} height="16" src={`https://cdn.discordapp.com/role-icons/${data.id}/${data.icon}.webp?size=16&quality=lossless`}/>
             </span>
             <div className={roleName}>
                 <Text
@@ -65,12 +65,13 @@ export function RoleList({ roleData, onRoleRemove }: { onRoleRemove: (id: string
                 <span>No roles</span>
             )}
 
-            {roleData?.length && (
+            {roleData?.length !== 0 && (
                 <div className={classes(root, roles)}>
                     {roleData.map(data => (
                         <RoleCard
                             data={data}
                             onRoleRemove={onRoleRemove}
+                            border={false}
                         />
                     ))}
                 </div>
@@ -79,9 +80,10 @@ export function RoleList({ roleData, onRoleRemove }: { onRoleRemove: (id: string
     );
 }
 
-export function RoleModalList({ roleList, onRoleRemove, modalProps }: {
+export function RoleModalList({ roleList, header, onRoleRemove, modalProps }: {
     roleList: Role[]
     modalProps: ModalProps
+    header: string
     onRoleRemove: (id: string) => void
 }) {
     return (
@@ -90,7 +92,7 @@ export function RoleModalList({ roleList, onRoleRemove, modalProps }: {
             size={ModalSize.SMALL}
         >
             <ModalHeader>
-                <Text className="role-list-title" variant="heading-lg/semibold">Roles</Text>
+                <Text className="vc-role-list-title" variant="heading-lg/semibold">{header}</Text>
                 <ModalCloseButton onClick={modalProps.onClose} />
             </ModalHeader>
             <ModalContent>

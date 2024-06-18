@@ -35,6 +35,7 @@ const DeveloperMode = getSettingStoreLazy("appearance", "developerMode")!;
 
 import { blendColors } from "./blendColors";
 import { RoleModalList } from "./components/RolesView";
+import { Guild } from "discord-types/general";
 
 const cl = classNameFactory("rolecolor");
 
@@ -117,16 +118,17 @@ function toggleRole(guildId: string, id: string) {
     settings.store.userColorFromRoles[guildId] = roles;
 }
 
-function RoleModal({ modalProps, guildId }: { modalProps: ModalProps, guildId: string }) {
-    const [ids, setIds] = React.useState(settings.store.userColorFromRoles[guildId]);
-    const roles = React.useMemo(() => ids.map(id => GuildStore.getRole(guildId, id)), [ids]);
+function RoleModal({ modalProps, guild }: { modalProps: ModalProps, guild: Guild }) {
+    const [ids, setIds] = React.useState(settings.store.userColorFromRoles[guild.id]);
+    const roles = React.useMemo(() => ids.map(id => GuildStore.getRole(guild.id, id)), [ids]);
 
     return <RoleModalList
         modalProps={modalProps}
         roleList={roles}
+        header={`${guild.name} highlighted roles.`}
         onRoleRemove={id => {
-            toggleRole(guildId, id);
-            setIds(settings.store.userColorFromRoles[guildId]);
+            toggleRole(guild.id, id);
+            setIds(settings.store.userColorFromRoles[guild.id]);
         }}
     />;
 }
@@ -274,7 +276,7 @@ export default definePlugin({
                             action={() => openModal(modalProps => (
                                 <RoleModal
                                     modalProps={modalProps}
-                                    guildId={guild.id}
+                                    guild={guild}
                                 />
                             ))}
                         />
