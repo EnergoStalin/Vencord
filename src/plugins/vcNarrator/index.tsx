@@ -28,6 +28,7 @@ import { wordsToTitle } from "@utils/text";
 import definePlugin, { ReporterTestable } from "@utils/types";
 import { AuthenticationStore, ChannelStore, GuildMemberStore, SelectedChannelStore, SelectedGuildStore, useMemo, UserStore, VoiceStateStore } from "@webpack/common";
 import { ReactElement } from "react";
+import { VoiceState } from "@webpack/types";
 
 import { getCurrentVoice, settings } from "./settings";
 
