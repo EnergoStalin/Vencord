@@ -17,10 +17,19 @@
 */
 
 import { definePluginSettings } from "@api/Settings";
+import { getSettingStoreLazy } from "@api/SettingsStores";
+import { classNameFactory } from "@api/Styles";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { ChannelStore, GuildMemberStore, GuildStore } from "@webpack/common";
+import { ChannelStore, GuildMemberStore, GuildStore, Menu, React } from "@webpack/common";
+import { Guild } from "discord-types/general";
+
+import { blendColors } from "./blendColors";
+import { RoleModalList } from "./components/RolesView";
+
+const cl = classNameFactory("rolecolor");
+const DeveloperMode = getSettingStoreLazy("appearance", "developerMode")!;
 
 const settings = definePluginSettings({
     chatMentions: {
@@ -117,6 +126,12 @@ export default definePlugin({
         }
     ],
     settings,
+
+    start() {
+        DeveloperMode.updateSetting(true);
+
+        settings.store.userColorFromRoles ??= {};
+    },
 
     getColor(userId: string, { channelId, guildId }: { channelId?: string; guildId?: string; }) {
         if (!(guildId ??= ChannelStore.getChannel(channelId!)?.guild_id)) return null;
