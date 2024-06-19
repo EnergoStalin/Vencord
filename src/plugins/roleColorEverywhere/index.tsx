@@ -33,12 +33,6 @@ import { RoleModalList } from "./components/RolesView";
 const cl = classNameFactory("rolecolor");
 const DeveloperMode = getSettingStoreLazy("appearance", "developerMode")!;
 
-import { blendColors } from "./blendColors";
-import { RoleModalList } from "./components/RolesView";
-import { Guild } from "discord-types/general";
-
-const cl = classNameFactory("rolecolor");
-
 const settings = definePluginSettings({
     chatMentions: {
         type: OptionType.BOOLEAN,
