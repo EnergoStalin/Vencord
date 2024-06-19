@@ -17,13 +17,24 @@
 */
 
 import { definePluginSettings } from "@api/Settings";
+import { classNameFactory } from "@utils/css";
+import { getUserSettingLazy } from "@api/UserSettings";
 import { Devs } from "@utils/constants";
 import { hasGuildFeature } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import definePlugin, { makeRange, OptionType } from "@utils/types";
 import { GuildMember, Role } from "@vencord/discord-types";
 import { findByCodeLazy } from "@webpack";
-import { ChannelStore, GuildMemberStore, GuildRoleStore, GuildStore } from "@webpack/common";
+
+import { brewUserColor } from "./witchCauldron";
+
+import { ChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, React } from "@webpack/common";
+import { ContextMenu } from "./components/ContextMenu";
+import { getCurrentGuild } from "@utils/discord";
+import ErrorBoundary from "@components/ErrorBoundary";
+
+const cl = classNameFactory("rolecolor");
+const DeveloperMode = getUserSettingLazy("appearance", "developerMode")!;
 
 const useMessageAuthor = findByCodeLazy('"Result cannot be null because the message is not null"');
 
@@ -93,13 +104,15 @@ const settings = definePluginSettings({
         markers: makeRange(0, 100, 10),
         default: 30
     }
-});
+}).withPrivateSettings<{
+    userColorFromRoles: Record<string, string[]>
+}>();
 
 const logger = new Logger("RoleColorEverywhere");
 
 export default definePlugin({
     name: "RoleColorEverywhere",
-    authors: [Devs.KingFish, Devs.lewisakura, Devs.AutumnVN, Devs.Kyuuhachi, Devs.jamesbt365],
+    authors: [Devs.KingFish, Devs.lewisakura, Devs.AutumnVN, Devs.Kyuuhachi, Devs.jamesbt365, Devs.EnergoStalin],
     description: "Adds the top role color anywhere possible",
     tags: ["Roles", "Appearance"],
     settings,
@@ -194,14 +207,20 @@ export default definePlugin({
         try {
             const guildId = ChannelStore.getChannel(channelOrGuildId)?.guild_id ?? GuildStore.getGuild(channelOrGuildId)?.id;
             if (guildId == null) return null;
+            const member = GuildMemberStore.getMember(guildId, userId)!;
 
-            const member = GuildMemberStore.getMember(guildId, userId);
-            return member && { guildId, member };
+            return brewUserColor(settings.store.userColorFromRoles, member.roles, channelOrGuildId) ?? member.colorString;
         } catch (e) {
             logger.error("Failed to get member", e);
         }
 
         return null;
+    },
+
+    start() {
+        DeveloperMode.updateSetting(true);
+
+        settings.store.userColorFromRoles ??= {};
     },
 
     getColorInt(userId: string, channelOrGuildId: string) {
@@ -261,6 +280,48 @@ export default definePlugin({
             return role && makeColorStyle(props.guildId, role);
         } catch (e) {
             logger.error("Failed to get role style", e);
+            return GuildRoleStore.getRole(props?.guildId, props?.id)?.colorString;
+        }
+    },
+
+    RoleGroupColor: ErrorBoundary.wrap(({ id, count, title, guildId, label }: { id: string; count: number; title: string; guildId: string; label: string; }) => {
+        const role = GuildRoleStore.getRole(guildId, id);
+
+        return (
+            <span style={{
+                color: role?.colorString,
+                fontWeight: "unset",
+                letterSpacing: ".05em"
+            }}>
+                {title ?? label} &mdash; {count}
+            </span>
+        );
+    }, { noop: true }),
+
+    getVoiceProps({ user: { id: userId }, guildId }: { user: { id: string; }; guildId: string; }) {
+        return {
+            style: {
+                color: this.getColor(userId, { guildId })
+            }
+        };
+    },
+
+    contextMenus: {
+        "dev-context"(children, { id }: { id: string; }) {
+            const guild = getCurrentGuild();
+            if (!guild) return;
+
+            settings.store.userColorFromRoles[guild.id] ??= [];
+
+            const role = GuildRoleStore.getRole(guild.id, id);
+            if (!role) return;
+
+            children.push(ContextMenu({
+                classFactory: cl,
+                colorsStore: settings.store.userColorFromRoles,
+                roleId: role.id,
+                guild
+            }));
         }
     }
 });
