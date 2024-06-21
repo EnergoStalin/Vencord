@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { sendBotMessage } from "@api/Commands";
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { humanFriendlyJoin } from "@utils/text";
@@ -12,7 +13,6 @@ import { findByPropsLazy } from "@webpack";
 import { ChannelStore, FluxDispatcher, MessageActions, MessageStore, RelationshipStore, SelectedChannelStore, UserStore } from "@webpack/common";
 import { Message, User } from "discord-types/general";
 
-const MessageCreator = findByPropsLazy("createBotMessage");
 const SortedVoiceStateStore = findByPropsLazy("getVoiceStatesForChannel");
 
 const settings = definePluginSettings({
@@ -93,7 +93,7 @@ function getMessageFlags(isDM: boolean, selfInChannel: boolean) {
 
 function sendVoiceStatusMessage(channelId: string, content: string, userId: string, isDM: boolean, selfInChannel: boolean): Message | null {
     if (!channelId) return null;
-    const message: Message = MessageCreator.createBotMessage({ channelId, content, embeds: [] });
+    const message: Message = sendBotMessage(channelId, { content });
     message.flags = getMessageFlags(isDM, selfInChannel);
     message.author = UserStore.getUser(userId);
     // If we try to send a message into an unloaded channel, the client-sided messages get overwritten when the channel gets loaded
