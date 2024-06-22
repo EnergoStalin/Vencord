@@ -17,8 +17,8 @@
 */
 
 import { definePluginSettings } from "@api/Settings";
-import { getSettingStoreLazy } from "@api/SettingsStores";
 import { classNameFactory } from "@api/Styles";
+import { getUserSettingLazy } from "@api/UserSettings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import { getCurrentGuild } from "@utils/discord";
@@ -31,7 +31,7 @@ import { blendColors } from "./blendColors";
 import { RoleModalList } from "./components/RolesView";
 
 const cl = classNameFactory("rolecolor");
-const DeveloperMode = getSettingStoreLazy("appearance", "developerMode")!;
+const DeveloperMode = getUserSettingLazy("appearance", "developerMode")!;
 
 const settings = definePluginSettings({
     chatMentions: {
