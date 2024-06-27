@@ -67,6 +67,9 @@ export default definePlugin({
 
             const app = apps[appId];
             activity.name ||= app.name;
+
+            activity.assets ??= {};
+            activity.assets.large_image ??= await lookupAsset(activity.application_id, `https://cdn.discordapp.com/app-icons/${appId}/${app.icon}.webp`);
         }
 
         FluxDispatcher.dispatch({ type: "LOCAL_ACTIVITY_UPDATE", ...data });
