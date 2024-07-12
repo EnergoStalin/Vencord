@@ -71,6 +71,11 @@ const settings = definePluginSettings({
         description: "Do not send messages about blocked users joining/leaving/moving voice channels",
         default: true
     },
+    trackStageChannels: {
+        type: OptionType.BOOLEAN,
+        description: "Enable tracking of stage voice channels",
+        default: false
+    },
 });
 
 interface VoiceState {
@@ -129,7 +134,7 @@ let clientOldChannelId: string | undefined;
 export default definePlugin({
     name: "VoiceJoinMessages",
     description: "Recieve client-side ephemeral messages when your friends join voice channels",
-    authors: [Devs.Sqaaakoi],
+    authors: [Devs.Sqaaakoi, Devs.EnergoStalin],
     settings,
     flux: {
         VOICE_STATE_UPDATES({ voiceStates }: { voiceStates: VoiceState[]; }) {
@@ -170,7 +175,11 @@ export default definePlugin({
                 }
 
                 if (settings.store.voiceChannel) {
-                    if (!settings.store.voiceChannelChatSelf && userId === clientUserId) return;
+                    console.log(ChannelStore.getChannel(channelId || oldChannelId || "")?.isGuildStageVoice());
+                    if (
+                        (!settings.store.voiceChannelChatSelf && userId === clientUserId) ||
+                        (ChannelStore.getChannel(channelId || oldChannelId || "")?.isGuildStageVoice() && !settings.store.trackStageChannels)
+                    ) return;
                     // Join / Leave
                     if ((!oldChannelId && channelId) || (oldChannelId && !channelId)) {
                         // empty string is to make type checker shut up
