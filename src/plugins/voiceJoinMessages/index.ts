@@ -100,7 +100,10 @@ function sendVoiceStatusMessage(channelId: string, content: string, userId: stri
     if (!channelId) return null;
     const message: Message = sendBotMessage(channelId, { content });
     message.flags = getMessageFlags(isDM, selfInChannel);
-    message.author = UserStore.getUser(userId);
+    message.author = {
+        ...UserStore.getUser(userId),
+        clan: null
+    } as any;
     // If we try to send a message into an unloaded channel, the client-sided messages get overwritten when the channel gets loaded
     // This might be messy but It Works:tm:
     const messagesLoaded: Promise<any> = MessageStore.hasPresent(channelId) ? new Promise<void>(r => r()) : MessageActions.fetchMessages({ channelId });
@@ -175,7 +178,6 @@ export default definePlugin({
                 }
 
                 if (settings.store.voiceChannel) {
-                    console.log(ChannelStore.getChannel(channelId || oldChannelId || "")?.isGuildStageVoice());
                     if (
                         (!settings.store.voiceChannelChatSelf && userId === clientUserId) ||
                         (ChannelStore.getChannel(channelId || oldChannelId || "")?.isGuildStageVoice() && !settings.store.trackStageChannels)
