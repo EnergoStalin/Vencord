@@ -1,9 +1,9 @@
-git checkout main
-gh repo sync $(git ls-remote --get-url origin) -b main
+git checkout dev
+gh repo sync $(git ls-remote --get-url origin) -b dev
 git pull
 
 git checkout roleColorEverywhere
-git rebase main
+git rebase dev
 git push -f
 
 git checkout local
