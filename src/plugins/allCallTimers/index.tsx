@@ -4,6 +4,7 @@ import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { FluxDispatcher, GuildStore, UserStore } from "@webpack/common";
 
+import { PassiveUpdateState, VoiceState } from "./types";
 import { Timer } from "./Timer";
 import { PassiveUpdateState, VoiceState } from "./types";
 
