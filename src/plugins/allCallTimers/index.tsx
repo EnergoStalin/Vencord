@@ -1,16 +1,10 @@
-/*
- * Vencord, a Discord client mod
- * Copyright (c) 2024 Vendicated and contributors
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { FluxDispatcher, GuildStore, UserStore } from "@webpack/common";
-import { PassiveUpdateState, VoiceState } from "@webpack/types";
 
+import { PassiveUpdateState, VoiceState } from "./types";
 import { Timer } from "./Timer";
 
 export const settings = definePluginSettings({
@@ -101,7 +95,10 @@ let runOneTime = true;
 export default definePlugin({
     name: "AllCallTimers",
     description: "Add call timer to all users in a server voice channel.",
-    authors: [Devs.Max, Devs.D3SOX],
+    authors: [{
+        name: "Max",
+        id: 0n
+    }, Devs.D3SOX],
 
     settings,
 
