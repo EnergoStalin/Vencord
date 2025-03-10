@@ -11,6 +11,8 @@ git rebase roleColorEverywhere
 git push -f
 
 tmp=`mktemp -d`
+trap "rm -rf '$tmp'" EXIT
+
 git clone -b fix-vencord-patch-locations git@github.com:Max-Herbold/AllCallTimersDiscordPlugin.git $tmp
 mv -f $tmp/allCallTimers/*.tsx -t src/plugins/allCallTimers
 rm -rf $tmp
