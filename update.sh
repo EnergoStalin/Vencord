@@ -13,9 +13,8 @@ git push -f
 tmp=`mktemp -d`
 trap "rm -rf '$tmp'" EXIT
 
-git clone -b fix-vencord-patch-locations git@github.com:Max-Herbold/AllCallTimersDiscordPlugin.git $tmp
+git clone --depth 1 git@github.com:Max-Herbold/AllCallTimersDiscordPlugin.git $tmp
 mv -f $tmp/allCallTimers/*.tsx -t src/plugins/allCallTimers
-rm -rf $tmp
 
 git add src/plugins/allCallTimers
 git commit -m 'chore(allCallTimers): auto upstream update'
