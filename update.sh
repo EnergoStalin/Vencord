@@ -10,11 +10,11 @@ git switch local
 git rebase roleColorEverywhere
 git push -f
 
-tmp=`mktemp -d`
+tmp="$(mktemp -d)"
 trap "rm -rf '$tmp'" EXIT
 
-git clone --depth 1 git@github.com:Max-Herbold/AllCallTimersDiscordPlugin.git $tmp
-mv -f $tmp/allCallTimers/*.tsx -t src/plugins/allCallTimers
+git clone --depth 1 git@github.com:Max-Herbold/AllCallTimersDiscordPlugin.git "$tmp"
+mv -f "$tmp"/allCallTimers/*.tsx -t src/plugins/allCallTimers
 
 git add src/plugins/allCallTimers
 git commit -m 'chore(allCallTimers): auto upstream update'
