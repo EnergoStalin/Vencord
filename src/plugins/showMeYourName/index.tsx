@@ -9,9 +9,11 @@ import "./styles.css";
 import { definePluginSettings } from "@api/Settings";
 import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
+import { getCurrentGuild } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
 import { Channel, Message, User } from "@vencord/discord-types";
 import { RelationshipStore, StreamerModeStore } from "@webpack/common";
+import { GuildMemberStore } from "@webpack/common";
 
 interface UsernameProps {
     author: { nick: string; authorId: string; };
@@ -53,6 +55,22 @@ const settings = definePluginSettings({
     },
 });
 
+function getDisplayName(username: string, displayName: string | undefined, nick: string | undefined, prefix: string) {
+    if (settings.store.displayNames && displayName?.length && displayName.toLowerCase() !== nick?.toLowerCase()) {
+        username = displayName;
+    }
+
+    if (nick?.length) {
+        if (settings.store.mode === "user-nick")
+            return <>{prefix}{username} <span className="vc-smyn-suffix">{nick}</span></>;
+
+        if (settings.store.mode === "nick-user")
+            return <>{prefix}{nick} <span className="vc-smyn-suffix">{username}</span></>;
+    }
+
+    return <>{prefix}{username}</>;
+}
+
 export default definePlugin({
     name: "ShowMeYourName",
     description: "Display usernames next to nicks, or no nicks at all",
@@ -67,12 +85,24 @@ export default definePlugin({
                 replace: "$self.renderUsername(arguments[0]),_oldChildren:$&"
             }
         },
+        {
+            find: ".usernameSpeaking]:",
+            replacement: {
+                match: /\[[^\]]*\.getName\(/,
+                replace: "[$self.renderUsernameVoice("
+            }
+        }
     ],
     settings,
 
+    renderUsernameVoice(user: { username: string, id: string, globalName: string }) {
+        const nick = GuildMemberStore.getNick(getCurrentGuild()!.id, user.id);
+        return getDisplayName(user.username, user.globalName, nick ?? undefined, "");
+    },
+
     renderUsername: ErrorBoundary.wrap(({ author, channel, message, isRepliedMessage, withMentionPrefix, userOverride }: UsernameProps) => {
         try {
-            const { mode, friendNicknames, displayNames, inReplies } = settings.store;
+            const { friendNicknames, displayNames, inReplies } = settings.store;
 
             const user = userOverride ?? message.author;
             let username = StreamerModeStore.enabled
@@ -101,13 +131,7 @@ export default definePlugin({
             if (isRepliedMessage && !inReplies || username.toLowerCase() === nick.toLowerCase())
                 return <>{prefix}{nick}</>;
 
-            if (mode === "user-nick")
-                return <>{prefix}{username} <span className="vc-smyn-suffix">{nick}</span></>;
-
-            if (mode === "nick-user")
-                return <>{prefix}{nick} <span className="vc-smyn-suffix">{username}</span></>;
-
-            return <>{prefix}{username}</>;
+            return getDisplayName(username, (user as any).globalName, nick, prefix);
         } catch {
             return <>{author?.nick}</>;
         }
