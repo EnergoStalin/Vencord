@@ -8,7 +8,6 @@ git push -f
 
 git switch local
 git rebase roleColorEverywhere
-git push -f
 
 tmp="$(mktemp -d)"
 trap "rm -rf '$tmp'" EXIT
