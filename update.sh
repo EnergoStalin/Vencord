@@ -4,7 +4,6 @@ git pull
 
 git switch roleColorEverywhere
 git rebase dev
-git push -f
 
 git switch local
 git rebase roleColorEverywhere
