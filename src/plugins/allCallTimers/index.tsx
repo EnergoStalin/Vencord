@@ -98,16 +98,16 @@ export default definePlugin({
     authors: [{
         name: "Max",
         id: 0n
-    }, Devs.D3SOX],
+    }, Devs.D3SOX, Devs.EnergoStalin],
 
     settings,
 
     patches: [
         {
-            find: ".usernameSpeaking]:",
+            find: "#{intl::GUEST_NAME_SUFFIX})]",
             replacement: {
-                match: /\i\.getName\((\i)\),/,
-                replace: "$&$self.showInjection($1.id),"
+                match: /#{intl::GUEST_NAME_SUFFIX}[^"]+""(?<=user:(\i).+?)/,
+                replace: "$&,$self.showInjection($1.id)"
             }
         }
     ],
