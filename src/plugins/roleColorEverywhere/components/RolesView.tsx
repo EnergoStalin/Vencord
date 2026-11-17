@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { Text } from "@components/Text";
 import { classes } from "@utils/misc";
-import { ModalCloseButton, ModalContent, ModalHeader, ModalProps, ModalRoot, ModalSize } from "@utils/modal";
-import { Role } from "@vencord/discord-types";
+import { RenderModalProps, Role } from "@vencord/discord-types";
 import { filters, findBulk, proxyLazyWebpack } from "@webpack";
-import { Text } from "@webpack/common";
+import { Modal } from "@webpack/common";
 
 const Classes = proxyLazyWebpack(() =>
     Object.assign({}, ...findBulk(
@@ -47,7 +47,8 @@ export function RoleCard({ onRoleRemove, data, border }: { onRoleRemove: (id: st
             <div className={roleName}>
                 <Text
                     className={roleNameOverflow}
-                    variant="text-xs/medium"
+                    size="xs"
+                    weight="medium"
                 >
                     {data.name}
                 </Text>
@@ -83,25 +84,20 @@ export function RoleList({ roleData, onRoleRemove }: { onRoleRemove: (id: string
 
 export function RoleModalList({ roleList, header, onRoleRemove, modalProps }: {
     roleList: Role[]
-    modalProps: ModalProps
+    modalProps: RenderModalProps
     header: string
     onRoleRemove: (id: string) => void
 }) {
     return (
-        <ModalRoot
+        <Modal
             {...modalProps}
-            size={ModalSize.SMALL}
+            size="sm"
+            title={<Text className="vc-role-list-title" size="lg" weight="semibold">{header}</Text>}
         >
-            <ModalHeader>
-                <Text className="vc-role-list-title" variant="heading-lg/semibold">{header}</Text>
-                <ModalCloseButton onClick={modalProps.onClose} />
-            </ModalHeader>
-            <ModalContent>
-                <RoleList
-                    roleData={roleList}
-                    onRoleRemove={onRoleRemove}
-                />
-            </ModalContent>
-        </ModalRoot >
+            <RoleList
+                roleData={roleList}
+                onRoleRemove={onRoleRemove}
+            />
+        </Modal>
     );
 }

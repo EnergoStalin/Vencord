@@ -26,13 +26,6 @@ import definePlugin, { ReporterTestable } from "@utils/types";
 import { findByCodeLazy } from "@webpack";
 import { ApplicationAssetUtils, FluxDispatcher, showToast } from "@webpack/common";
 
-const assetManager = mapMangledModuleLazy(
-    "getAssetImage: size must === [number, number] for Twitch",
-    {
-        getAsset: filters.byCode("apply("),
-    }
-);
-
 const lookupRpcApp = findByCodeLazy(".APPLICATION_RPC(");
 
 async function lookupAsset(applicationId: string, key: string): Promise<string> {

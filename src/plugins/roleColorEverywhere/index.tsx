@@ -17,21 +17,19 @@
 */
 
 import { definePluginSettings } from "@api/Settings";
-import { classNameFactory } from "@utils/css";
 import { getUserSettingLazy } from "@api/UserSettings";
+import ErrorBoundary from "@components/ErrorBoundary";
 import { Devs } from "@utils/constants";
-import { hasGuildFeature } from "@utils/discord";
+import { classNameFactory } from "@utils/css";
+import { getCurrentGuild, hasGuildFeature } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import definePlugin, { makeRange, OptionType } from "@utils/types";
 import { GuildMember, Role } from "@vencord/discord-types";
 import { findByCodeLazy } from "@webpack";
-
-import { brewUserColor } from "./witchCauldron";
-
 import { ChannelStore, GuildMemberStore, GuildRoleStore, GuildStore, React } from "@webpack/common";
+
 import { ContextMenu } from "./components/ContextMenu";
-import { getCurrentGuild } from "@utils/discord";
-import ErrorBoundary from "@components/ErrorBoundary";
+import { brewUserColor } from "./witchCauldron";
 
 const cl = classNameFactory("rolecolor");
 const DeveloperMode = getUserSettingLazy("appearance", "developerMode")!;
@@ -207,9 +205,11 @@ export default definePlugin({
         try {
             const guildId = ChannelStore.getChannel(channelOrGuildId)?.guild_id ?? GuildStore.getGuild(channelOrGuildId)?.id;
             if (guildId == null) return null;
-            const member = GuildMemberStore.getMember(guildId, userId)!;
+            const member = GuildMemberStore.getMember(guildId, userId);
+            if (!member) return null;
+            const color = brewUserColor(settings.store.userColorFromRoles, member.roles, guildId);
 
-            return brewUserColor(settings.store.userColorFromRoles, member.roles, channelOrGuildId) ?? member.colorString;
+            return { guildId, member: color ? { ...member, colorString: color, colorStrings: null } : member };
         } catch (e) {
             logger.error("Failed to get member", e);
         }

@@ -4,14 +4,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { ModalProps } from "@utils/modal";
+import { Guild, RenderModalProps } from "@vencord/discord-types";
 import { GuildRoleStore, React } from "@webpack/common";
 
 import { toggleRole } from "../storeHelper";
 import { RoleModalList } from "./RolesView";
-import { Guild } from "@vencord/discord-types";
 
-export function RoleModal({ modalProps, guild, colorsStore }: { modalProps: ModalProps, guild: Guild, colorsStore: Record<string, string[]> }) {
+export function RoleModal({ modalProps, guild, colorsStore }: { modalProps: RenderModalProps, guild: Guild, colorsStore: Record<string, string[]> }) {
     const [ids, setIds] = React.useState(colorsStore[guild.id]);
     const roles = React.useMemo(() => ids.map(id => GuildRoleStore.getRole(guild.id, id)), [ids]);
 
@@ -25,4 +24,3 @@ export function RoleModal({ modalProps, guild, colorsStore }: { modalProps: Moda
         }}
     />;
 }
-

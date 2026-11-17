@@ -9,9 +9,9 @@ import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { humanFriendlyJoin } from "@utils/text";
 import definePlugin, { OptionType } from "@utils/types";
+import { Message, User } from "@vencord/discord-types";
 import { findByPropsLazy } from "@webpack";
 import { ChannelStore, FluxDispatcher, MessageActions, MessageStore, RelationshipStore, SelectedChannelStore, UserStore } from "@webpack/common";
-import { Message, User } from "discord-types/general";
 
 const SortedVoiceStateStore = findByPropsLazy("getVoiceStatesForChannel");
 

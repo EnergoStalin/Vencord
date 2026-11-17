@@ -12,8 +12,7 @@ import { Devs } from "@utils/constants";
 import { getCurrentGuild } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
 import { Channel, Message, User } from "@vencord/discord-types";
-import { RelationshipStore, StreamerModeStore } from "@webpack/common";
-import { GuildMemberStore } from "@webpack/common";
+import { GuildMemberStore, RelationshipStore, StreamerModeStore } from "@webpack/common";
 
 interface UsernameProps {
     author: { nick: string; authorId: string; };
@@ -103,7 +102,7 @@ export default definePlugin({
 
     renderUsername: ErrorBoundary.wrap(({ author, channel, message, isRepliedMessage, withMentionPrefix, userOverride }: UsernameProps) => {
         try {
-            const { friendNicknames, displayNames, inReplies } = settings.store;
+            const { friendNicknames, displayNames, inReplies, mode } = settings.store;
 
             const user = userOverride ?? message.author;
             let username = StreamerModeStore.enabled
