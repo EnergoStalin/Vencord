@@ -13,6 +13,8 @@ if [[ -d "$(git rev-parse --git-path rebase-merge)" || -d "$(git rev-parse --git
     exit 1
 fi
 
+old_roles="$(git rev-parse roleColorEverywhere)"
+
 git fetch upstream dev
 git switch dev
 git merge --ff-only upstream/dev
@@ -21,7 +23,7 @@ git switch roleColorEverywhere
 git rebase dev
 
 git switch local
-git rebase roleColorEverywhere
+git rebase --onto roleColorEverywhere "$old_roles"
 
 tmp="$(mktemp -d "${TMPDIR:-/tmp/opencode}/vencord-update.XXXXXXXX")"
 trap 'rm -rf -- "$tmp"' EXIT
