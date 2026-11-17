@@ -8,7 +8,7 @@ export default definePlugin({
     description: "Add button for opening user with discord-tracker.com",
 
     contextMenus: {
-        "user-context"(children, {user}: { user: { id: string } }) {
+        "user-context"(children, { user }: { user: { id: string } }) {
             children.push(<Menu.MenuItem id="id" label="Tracker" action={() => window.VencordNative.native.openExternal(`https://discord-tracker.com/tracker/user/${user.id}/`)}/>);
         }
     }

@@ -8,6 +8,7 @@ import { GuildRoleStore } from "@webpack/common";
 
 import { blendColors } from "./blendColors";
 import { atLeastOneOverrideAppliesToGuild } from "./storeHelper";
+import { ColorsStore } from "./types";
 
 export function brewUserColor(colorsStore: ColorsStore, roles: string[], guildId: string) {
     const overrides = colorsStore[guildId];

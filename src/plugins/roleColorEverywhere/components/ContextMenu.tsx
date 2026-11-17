@@ -5,10 +5,11 @@
  */
 
 import { classNameFactory } from "@api/Styles";
+import { toggleRole } from "@plugins/roleColorEverywhere/storeHelper";
+import { ColorsStore } from "@plugins/roleColorEverywhere/types";
 import { Guild } from "@vencord/discord-types";
 import { Menu, openModal } from "@webpack/common";
 
-import { toggleRole } from "../storeHelper";
 import { RoleModal } from "./RolesModal";
 
 export function ContextMenu({ colorsStore, guild, roleId, classFactory }: { guild: Guild, roleId: string, colorsStore: ColorsStore, classFactory: ReturnType<typeof classNameFactory> }) {

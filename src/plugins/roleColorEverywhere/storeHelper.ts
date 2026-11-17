@@ -6,6 +6,8 @@
 
 import { GuildRoleStore } from "@webpack/common";
 
+import { ColorsStore } from "./types";
+
 // Using plain replaces cause i dont want sanitize regexp
 export function toggleRole(colorsStore: ColorsStore, guildId: string, id: string) {
     let roles = colorsStore[guildId];

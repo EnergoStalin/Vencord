@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { toggleRole } from "@plugins/roleColorEverywhere/storeHelper";
 import { Guild, RenderModalProps } from "@vencord/discord-types";
 import { GuildRoleStore, React } from "@webpack/common";
 
-import { toggleRole } from "../storeHelper";
 import { RoleModalList } from "./RolesView";
 
 export function RoleModal({ modalProps, guild, colorsStore }: { modalProps: RenderModalProps, guild: Guild, colorsStore: Record<string, string[]> }) {

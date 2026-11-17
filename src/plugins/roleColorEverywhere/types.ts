@@ -4,4 +4,4 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-type ColorsStore = Record<string, string[]>;
+export type ColorsStore = Record<string, string[]>;

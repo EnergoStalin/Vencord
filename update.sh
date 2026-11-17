@@ -30,6 +30,7 @@ trap 'rm -rf -- "$tmp"' EXIT
 
 git clone --depth 1 git@github.com:Max-Herbold/AllCallTimersDiscordPlugin.git "$tmp"
 mv -f "$tmp"/allCallTimers/*.tsx -t src/plugins/allCallTimers
+git apply scripts/allCallTimers.patch
 
 git add src/plugins/allCallTimers
 if ! git diff --cached --quiet -- src/plugins/allCallTimers; then
@@ -39,3 +40,8 @@ fi
 pnpm install
 pnpm build --dev
 pnpm test:ts
+pnpm buildStandalone --dev
+pnpm buildWebStandalone --dev
+pnpm lint
+pnpm fmt:check
+pnpm generatePluginJson > /dev/null

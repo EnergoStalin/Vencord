@@ -132,6 +132,8 @@
                 "packages/discord-types/**",
 
                 // Third party code that doesn't have our header
+                "src/plugins/allCallTimers/**",
+                "src/plugins/discordTracker/**",
                 "src/api/DataStore/index.ts",
                 "src/main/themes/index.ts",
                 "src/main/utils/crxToZip.ts",
